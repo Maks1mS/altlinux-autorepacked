@@ -1,14 +1,16 @@
 import os
 import shutil
-import subprocess
 import tempfile
 import re
+
+from autorepacked import utils
 
 
 def _get_file(directory):
     files_and_dirs = os.listdir(directory)
     files = [f for f in files_and_dirs if os.path.isfile(os.path.join(directory, f))]
     return os.path.join(directory, files[0]) if files else None
+
 
 class BaseProvider:
     def __init__(self, config):
@@ -21,14 +23,14 @@ class BaseProvider:
         return self._name
 
     def get_version(self):
-        url = subprocess.run([
+        url = utils.run([
             'epm',
             '--silent',
             'tool',
             'eget',
             '--get-real-url',
             self.get_download_url(),
-        ], stdout=subprocess.PIPE).stdout.decode('utf-8')
+        ])
 
         pattern = r'\d+\.\d+\.\d+'
         match = re.search(pattern, url)
@@ -44,48 +46,36 @@ class BaseProvider:
         download_directory = tempfile.mkdtemp()
         repacked_directory = tempfile.mkdtemp()
 
-        subprocess.run(
-            args=[
-                'epm',
-                '--silent',
-                'tool',
-                'eget',
-                '-q',
-                self.get_download_url(),
-            ],
-            stdout=subprocess.PIPE,
-            cwd=download_directory,
-        ).stdout.decode('utf-8')
+        utils.run([
+            'epm',
+            '--silent',
+            'tool',
+            'eget',
+            '-q',
+            self.get_download_url(),
+        ], cwd=download_directory)
 
         file = _get_file(download_directory)
 
-        subprocess.run(
-            args=[
-                'epm',
-                '--silent',
-                '-y',
-                'repack',
-                file,
-            ],
-            stdout=subprocess.PIPE,
-            cwd=repacked_directory,
-        ).stdout.decode('utf-8')
+        utils.run([
+            'epm',
+            '--silent',
+            '-y',
+            'repack',
+            file,
+        ], cwd=repacked_directory)
 
         shutil.rmtree(download_directory)
 
         file = _get_file(repacked_directory)
 
-        subprocess.run(
-            args=[
-                'epm',
-                '--silent',
-                'repo',
-                'pkgadd',
-                self.config.get('repo_path'),
-                file,
-            ],
-            stdout=subprocess.PIPE,
-            cwd=repacked_directory,
-        ).stdout.decode('utf-8')
+        utils.run([
+            'epm',
+            '--silent',
+            'repo',
+            'pkgadd',
+            self.config.get('repo_path'),
+            file,
+        ], cwd=repacked_directory)
 
         shutil.rmtree(repacked_directory)
