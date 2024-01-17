@@ -8,11 +8,7 @@ class GithubReleasesProvider(BaseProvider):
     _repo = ''
 
     def _last_release_url(self):
-        return utils.run([
-            'epm',
-            '--silent',
-            'tool',
-            'eget',
+        return utils.eget([
             '--get-real-url',
             f'https://github.com/{self._repo}/releases/latest'
         ])

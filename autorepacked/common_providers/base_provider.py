@@ -13,6 +13,8 @@ def _get_file(directory):
 
 
 class BaseProvider:
+    disabled = False
+
     def __init__(self, config):
         self.config = config
 
@@ -23,11 +25,7 @@ class BaseProvider:
         return self._name
 
     def get_version(self):
-        url = utils.run([
-            'epm',
-            '--silent',
-            'tool',
-            'eget',
+        url = utils.eget([
             '--get-real-url',
             self.get_download_url(),
         ])
@@ -42,24 +40,27 @@ class BaseProvider:
     def get_download_url(self):
         return self.DOWNLOAD_URL
 
+    def get_download_name(self):
+        return ""
+
     def download(self):
         download_directory = tempfile.mkdtemp()
         repacked_directory = tempfile.mkdtemp()
 
-        utils.run([
-            'epm',
-            '--silent',
-            'tool',
-            'eget',
-            '-q',
-            self.get_download_url(),
-        ], cwd=download_directory)
+        args = []
+
+        download_name = self.get_download_name()
+
+        if download_name:
+            args += ["-O", download_name]
+
+        args += [self.get_download_url()]
+
+        utils.eget(args, cwd=download_directory)
 
         file = _get_file(download_directory)
 
-        utils.run([
-            'epm',
-            '--silent',
+        utils.epm([
             '-y',
             'repack',
             file,
@@ -69,9 +70,7 @@ class BaseProvider:
 
         file = _get_file(repacked_directory)
 
-        utils.run([
-            'epm',
-            '--silent',
+        utils.epm([
             'repo',
             'pkgadd',
             self.config.get('repo_path'),

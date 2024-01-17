@@ -14,8 +14,7 @@ from autorepacked.config import Config
 
 
 def create_repo(config: Config):
-    utils.run([
-        'epm',
+    utils.epm([
         'repo',
         'create',
         config.get('repo_path')
@@ -23,8 +22,7 @@ def create_repo(config: Config):
 
 
 def update_epm():
-    utils.run([
-        'epm',
+    utils.epm([
         'ei'
     ])
 
@@ -69,23 +67,23 @@ def update():
         module = importlib.import_module(f'providers.{module_name}')
         if hasattr(module, 'get_provider'):
             provider = module.get_provider(config)  # type: BaseProvider
-            name = provider.get_name()
-            print(f"request version of {name}")
-            version = provider.get_version()
-            if name not in versions or versions[name] != version:
-                print(f'{name} has new version {version}')
-                versions[name] = version
-                provider.download()
-                need_update_index = True
+            if not provider.disabled:
+                name = provider.get_name()
+                print(f"request version of {name}")
+                version = provider.get_version()
+                if name not in versions or versions[name] != version:
+                    print(f'{name} has new version {version}')
+                    versions[name] = version
+                    provider.download()
+                    need_update_index = True
 
     repo_data['versions'] = versions
 
     current_date = datetime.datetime.utcnow()
 
     if need_update_index:
-        utils.run(
+        utils.epm(
             args=[
-                'epm',
                 'repo',
                 'index',
                 config.get('repo_path'),

@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y \
     alien \
     pip && \
     wget -O- https://eepm.ru/epm.sh | bash /dev/stdin ei
-#    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .
 RUN pip --no-cache-dir install -r requirements.txt
