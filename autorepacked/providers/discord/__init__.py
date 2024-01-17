@@ -1,4 +1,4 @@
-from autorepacked.base_provider import BaseProvider
+from autorepacked.common_providers.base_provider import BaseProvider
 
 
 class DiscordProvider(BaseProvider):

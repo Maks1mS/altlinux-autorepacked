@@ -1,11 +1,11 @@
 FROM registry.altlinux.org/alt/python:p10
 
 RUN apt-get update && apt-get install -y \
-    eepm \
     wget \
     apt-repo-tools \
     alien \
-    pip
+    pip && \
+    wget -O- https://eepm.ru/epm.sh | bash /dev/stdin ei
 #    && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt .

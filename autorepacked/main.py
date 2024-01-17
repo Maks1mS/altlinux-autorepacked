@@ -9,7 +9,7 @@ import uvicorn
 from fastapi_utils.tasks import repeat_every
 
 from autorepacked import utils
-from autorepacked.base_provider import BaseProvider
+from autorepacked.common_providers.base_provider import BaseProvider
 from autorepacked.config import Config
 
 
@@ -19,6 +19,13 @@ def create_repo(config: Config):
         'repo',
         'create',
         config.get('repo_path')
+    ])
+
+
+def update_epm():
+    utils.run([
+        'epm',
+        'ei'
     ])
 
 
@@ -50,6 +57,8 @@ def update():
         if datetime.datetime.now() - datetime.timedelta(minutes=5) < last_version_check:
             update_task_started = False
             return
+
+    update_epm()
 
     providers_path = os.path.join(os.getcwd(), 'autorepacked/providers')
     modules = os.listdir(providers_path)
