@@ -21,10 +21,11 @@ def create_repo(config: Config):
     ])
 
 
+def update_cache():
+    utils.epm(['update'])
+
 def update_epm():
-    utils.epm([
-        'ei'
-    ])
+    utils.epm(['ei'])
 
 
 @asynccontextmanager
@@ -33,8 +34,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan)
 config = Config()
+app = FastAPI(lifespan=lifespan, root_path=config.get('root_path'))
 
 update_task_started = False
 
@@ -56,6 +57,7 @@ def update():
             update_task_started = False
             return
 
+    update_cache()
     update_epm()
 
     providers_path = os.path.join(os.getcwd(), 'autorepacked/providers')

@@ -7,7 +7,11 @@ class RustdeskProvider(GithubReleasesProvider):
     _repo = 'rustdesk/rustdesk'
 
     def _get_release_filename(self):
-        return f'rustdesk-{self.get_version()}-x86_64.deb'
+        return f'rustdesk-{self.get_version()}.deb'
+
+    def get_version(self):
+        # pin version due to error in start
+        return '1.1.9'
 
 
 def get_provider(config):
